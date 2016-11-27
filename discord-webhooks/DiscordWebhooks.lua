@@ -1,3 +1,5 @@
+-- MIT License Copyright (c) 2016 Brad Sharp https://github.com/BradSharp/roblox
+
 local httpService = game:GetService'HttpService'
 local domain = "https://discordapp.com/api/webhooks"
 
