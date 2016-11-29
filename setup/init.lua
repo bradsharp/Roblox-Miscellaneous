@@ -28,5 +28,5 @@ for name, details in pairs(modules) do
     end
 end
 
-game.FilteringEnabled = true
 game.StarterGui.ResetPlayerGuiOnSpawn = false
+game.Workspace.FilteringEnabled = true
