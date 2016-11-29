@@ -14,7 +14,7 @@ local httpService = game:GetService'HttpService'
 
 for name, details in pairs(modules) do
     local module = Instance.new("ModuleScript")
-    module.source = httpService:GetAsync(base .. details.Source)
+    module.Source = httpService:GetAsync(base .. details.Source)
     module.Name = name
     if details.Server and details.Client then
         local clientModule = module:Clone()
