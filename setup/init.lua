@@ -2,7 +2,7 @@ local base = "https://raw.githubusercontent.com/BradSharp"
 
 local modules = {
     luna = {
-        Source = "/luna/master/luna.lua"
+        Source = "/luna/master/luna.lua",
         Server = true,
         Client = true
     }
