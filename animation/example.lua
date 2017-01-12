@@ -1,4 +1,4 @@
-local tween = require(script.Animate)
+local tween = require(script.Objectional)
 local part = Instance.new("Part")
 part.Anchored = true
 part.Parent = game.Workspace
