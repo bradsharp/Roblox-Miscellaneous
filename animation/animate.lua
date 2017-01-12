@@ -35,7 +35,7 @@ game:GetService'RunService'[game:FindFirstChild'NetworkServer'
 	and "Heartbeat" or "RenderStepped"]:connect(update)
 
 return function (id, f, initial, final, direction, style, duration, override, callback)
-	if not animations[id] or animations[id][5] then
+	if (not animations[id]) or (animations[id][5] == true) then
 		direction = enumify(direction, "EasingDirection") or Enum.EasingDirection.Out
 		style = enumify(style, "EasingStyle") or Enum.EasingStyle.Sine
 		animations[id] = {
@@ -43,10 +43,11 @@ return function (id, f, initial, final, direction, style, duration, override, ca
 			tick(),
 			duration or 1,
 			easing[direction][style],
-			override == nil and true,
+			true, --override == nil or override,
 			callback,
 			initial or 0,
 			final or 1,
 		}
+		return true
 	end
 end
