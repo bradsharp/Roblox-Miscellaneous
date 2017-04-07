@@ -15,6 +15,7 @@ end
 
 function update()
 	local time = tick()
+	local remove = {}
 	for id, animation in pairs(animations) do
 		if time - animation[2] >= animation[3] then
 			animation[1](animation[8])
@@ -22,12 +23,16 @@ function update()
 			if animation[6] then
 				spawn(animation[6])
 			end
+			table.insert(remove, id)
 		else
 			local i = animation[4](time - animation[2], animation[3])
 			local v = animation[7] + (animation[8] - animation[7]) * i
 			animation[9] = v
 			animation[1](v)
 		end
+	end
+	for i = 1, #remove do
+		animations[remove[i]] = nil
 	end
 end
 
