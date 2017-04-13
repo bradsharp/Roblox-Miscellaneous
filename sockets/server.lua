@@ -196,6 +196,7 @@ connected.connect = connected.Connect
 connected.Listeners = {}
 
 module.Connected = connected
+module.Invoke = module.Query
 module.Fire = module.Emit
 module.FireClients = module.EmitClients
 module.InvokeClients = module.QueryClients
