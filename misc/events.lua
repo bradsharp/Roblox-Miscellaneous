@@ -1,73 +1,61 @@
-----------------
--- CONNECTION --
-----------------
+function generateId()
+	return httpService:GenerateGUID(false)
+end
+
+-- CONNECTION -----------------------------------
 
 local connection = {}
 connection.__index = connection
 
 function connection:Disconnect()
-	if self.Connected then
-		for i = 1, #self.Table do
-			if self.Table[i] == self.Listener then
-				table.remove(self.Table, i)
-				break
-			end
+	for i = 1, #self.Listeners do
+		if self.Listeners[i][1] == self.Id then
+			table.remove(self.Listeners, i)
+			break
 		end
-		self.Connected = false
-	else
-		error("Already disconnected")
 	end
+	self.Listeners = nil
 end
 
 connection.disconnect = connection.Disconnect
 
-function createConnection(tab, lis)
+function createThreads(listeners)
+	local threads = {}
+	for i = 1, #listeners do
+		table.insert(threads, coroutine.create(listeners[i][2]))
+	end
+	return threads
+end
+
+function createConnection(listeners, listener)
+	local id = generateId()
+	table.insert(listeners, 1, {id, listener})
 	return setmetatable({
-		Connected = true,
-		Table = tab,
-		Listener = lis
+		Id = id,
+		Listeners = listeners,
 	}, connection)
 end
 
-------------
--- SIGNAL --
-------------
+-- SIGNAL ---------------------------------------
 
 local signal = {}
 signal.__index = signal
 
 function signal:Connect(listener)
-	local connection = createConnection(self.Listeners, listener)
-	table.insert(self.Listeners, listener)
-	return connection
+	return createConnection(self.Listeners, listener)
 end
 
-function signal:Wait()
-	local current = self.Switch
-	while current == self.Switch do
-		wait()
-	end
-	return unpack(self.Args)
-end
-
-function signal:Fire(...)
-	print'Fired'
-	self.Args = {...}
-	self.Switch = not self.Switch
-	for _, listener in ipairs(self.Listeners) do
-		spawn(function ()
-			listener(unpack(self.Args))
-		end)
+function signal:Run(...)
+	local threads = createThreads(self.Listeners)
+	for i = 1, #threads do
+		coroutine.resume(threads[i], ...)
 	end
 end
 
 signal.connect = signal.Connect
-signal.wait = signal.Wait
 
 function createSignal()
 	return setmetatable({
-		Listeners = {},
-		Switch = false,
-		Args = {}
+		Listeners = {}
 	}, signal)
 end
