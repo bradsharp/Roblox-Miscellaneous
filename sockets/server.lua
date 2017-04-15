@@ -21,14 +21,32 @@ function generateId()
 	return httpService:GenerateGUID(false)
 end
 
+--local fastSpawn do
+--	local event = Instance.new("BindableEvent")
+--	event.Event:connect(function ()
+--		
+--	end)
+--	function fastSpawn(fn, ...)
+--		event:Fire()
+--	end
+--end
+
+
 local notNil = {__index = function (s, i)
 	local t={} rawset(s, i, t) return t
 end}
+
+local function assert(condition, message)
+	if not condition == true then
+		error(message, 3)
+	end
+end
 
 -- CONNECTION -----------------------------------
 
 local connection = {}
 connection.__index = connection
+connection.__mode = "v"
 
 function connection:Disconnect()
 	for i = 1, #self.Listeners do
@@ -42,12 +60,12 @@ end
 
 connection.disconnect = connection.Disconnect
 
-function createThreads(listeners)
-	local threads = {}
+function createCallbacks(listeners)
+	local callbacks = {}
 	for i = 1, #listeners do
-		table.insert(threads, coroutine.create(listeners[i][2]))
+		table.insert(callbacks, coroutine.wrap(listeners[i][2]))
 	end
-	return threads
+	return callbacks
 end
 
 function createConnection(listeners, listener)
@@ -68,17 +86,33 @@ function signal:Connect(listener)
 	return createConnection(self.Listeners, listener)
 end
 
+function signal:Wait()
+	table.insert(self.Threads, coroutine.running())
+	local output repeat
+		output = {coroutine.yield()}
+		local success = table.remove(output, 1)
+	until success == true
+	coroutine.yield()
+	return unpack(output)
+end
+
 function signal:Fire(...)
-	local threads = createThreads(self.Listeners)
+	for i = #self.Threads, 1, -1 do
+		coroutine.resume(self.Threads[i], true, ...)
+		table.remove(self.Threads, i)
+	end
+	local threads = createCallbacks(self.Listeners)
 	for i = 1, #threads do
-		coroutine.resume(threads[i], ...)
+		threads[i](...)
 	end
 end
 
 signal.connect = signal.Connect
+signal.wait = signal.Wait
 
 function createSignal()
 	return setmetatable({
+		Threads = {},
 		Listeners = {}
 	}, signal)
 end
@@ -102,9 +136,12 @@ end
 
 local socket = {}
 socket.__index = socket
-socket.__newindex = error
+socket.__newindex = function (_, index)
+	error(index .. " is not a valid member of Socket", 0)
+end
 
 function socket:Listen(name, listener)
+	assert(self.Alive, "Socket is dead")
 	if not self.Callbacks[name] then
 		self:SetCallback(name, listener)
 	end
@@ -114,22 +151,25 @@ function socket:Listen(name, listener)
 end
 
 function socket:Emit(name, ...)
+	assert(self.Alive, "Socket is dead")
 	event:FireClient(self.Player, name, ...)
 end
 
 function socket:RunListeners(name, ...)
-	local listeners = self.Listeners[name]
-	if #listeners > 0 then
-		local threads = createThreads(listeners)
-		for i = 1, #threads do
-			coroutine.resume(threads[i], ...)
-		end
-	else
-		local queue = self.Queue.Events[name]
-		if #queue < requestQueueSize then
-			table.insert(queue, {...})
+	if self.Alive then
+		local listeners = self.Listeners[name]
+		if #listeners > 0 then
+			local threads = createCallbacks(listeners)
+			for i = 1, #threads do
+				threads[i](...)
+			end
 		else
-			warn("Max event queue reached for", name, "event will not be queued")
+			local queue = self.Queue.Events[name]
+			if #queue < requestQueueSize then
+				table.insert(queue, {...})
+			else
+				warn("Max event queue reached for", name, "event will not be queued")
+			end
 		end
 	end
 end
@@ -144,11 +184,13 @@ function socket:ExecuteEventQueue(name)
 end
 
 function socket:SetCallback(name, callback)
+	assert(self.Alive, "Socket is dead")
 	self.Callbacks[name] = callback
 	self:ExecuteRequestQueue(name)
 end
 
 function socket:Request(name, ...)
+	assert(self.Alive, "Socket is dead")
 	local id = generateId()
 	request:FireClient(self.Player, id, name, ...)
 	local args
@@ -165,15 +207,17 @@ function socket:Request(name, ...)
 end
 
 function socket:RunCallback(name, requestId, ...)
-	local callback = self.Callbacks[name]
-	if callback then
-		response:FireClient(self.Player, requestId, callback(...))
-	else
-		local queue = self.Queue.Requests[name]
-		if #queue < requestQueueSize then
-			table.insert(queue, {requestId, ...})
+	if self.Alive then
+		local callback = self.Callbacks[name]
+		if callback then
+			response:FireClient(self.Player, requestId, callback(...))
 		else
-			warn("Max event queue reached for", name, "event will not be queued")
+			local queue = self.Queue.Requests[name]
+			if #queue < requestQueueSize then
+				table.insert(queue, {requestId, ...})
+			else
+				warn("Max event queue reached for", name, "event will not be queued")
+			end
 		end
 	end
 end
@@ -183,13 +227,14 @@ function socket:ExecuteRequestQueue(name)
 	while #queue > 0 do
 		local args = queue[1]
 		local requestId = table.remove(args, 1)
-		local thread = coroutine.create(socket.RunCallback)
-		coroutine.resume(thread, self, name, requestId, unpack(args))
+		local thread = coroutine.wrap(socket.RunCallback)
+		thread(self, name, requestId, unpack(args))
 		table.remove(queue, 1)
 	end
 end
 
 function socket:GetGroup(name)
+	assert(self.Alive, "Socket is dead")
 	local group = self.Groups[name]
 	if not group then
 		group = createGroup(self, name)
@@ -199,6 +244,7 @@ function socket:GetGroup(name)
 end
 
 function socket:JoinRoom(name)
+	assert(self.Alive, "Socket is dead")
 	local room = module.Rooms[name]
 	for i = 1, #room do
 		if room[i] == self then
@@ -209,6 +255,7 @@ function socket:JoinRoom(name)
 end
 
 function socket:LeaveRoom(name)
+	assert(self.Alive, "Socket is dead")
 	local room = module.Rooms[name]
 	for i = 1, #room do
 		if room[i] == self then
@@ -223,12 +270,19 @@ function socket.__tostring(self)
 end
 
 function socket:Destroy()
-	for i in pairs(self) do
-		rawset(self, i, nil)
-	end
+	self.Listeners = nil
+	self.Callbacks = nil
+	self.Queue = nil
+	self.Responses = nil
+	self.Rooms = nil
+	self.Groups = nil
+	self.Player = nil
+	self.Alive = false
 end
 
 function socket:Disconnect(msg)
+	assert(self.Alive, "Socket is dead")
+	self.Alive = false
 	self.Player:Kick(msg or "You have been disconnected")
 end
 
@@ -249,6 +303,7 @@ function createSocket(player)
 		Responses = {},
 		Groups = {},
 		Rooms = {},
+		Alive = true,
 		Disconnected = createSignal()
 	}, socket)
 end
@@ -275,10 +330,15 @@ group.__index = function (self, index)
 	end
 end
 	
--- MODULE ---------------------------------------
+-- MODULE --------------------------------------
+
+local weak = {__mode="v"}
+local notNilWeak = {__index = function (s, i)
+	local t=setmetatable({}, weak) rawset(s, i, t) return t
+end}
 
 module.Connected = createSignal()
-module.Rooms = setmetatable({}, notNil)
+module.Rooms = setmetatable({}, notNilWeak)
 module.Callbacks = {}
 
 function module:GetSocket(player)
@@ -396,7 +456,6 @@ folder.Name = "Sockets"
 event.Parent = folder
 request.Parent = folder
 response.Parent = folder
-
 folder.Parent = replicatedStorage
 
 return module
