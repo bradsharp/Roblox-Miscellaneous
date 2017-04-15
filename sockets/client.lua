@@ -16,10 +16,15 @@ function generateId()
 	return httpService:GenerateGUID(false)
 end
 
+local notNil = {__index = function (s, i)
+	local t={} rawset(s, i, t) return t
+end}
+
 -- CONNECTION -----------------------------------
 
 local connection = {}
 connection.__index = connection
+connection.__mode = "v"
 
 function connection:Disconnect()
 	for i = 1, #self.Listeners do
@@ -33,12 +38,12 @@ end
 
 connection.disconnect = connection.Disconnect
 
-function createThreads(listeners)
-	local threads = {}
+function createCallbacks(listeners)
+	local callbacks = {}
 	for i = 1, #listeners do
-		table.insert(threads, coroutine.create(listeners[i][2]))
+		table.insert(callbacks, coroutine.wrap(listeners[i][2]))
 	end
-	return threads
+	return callbacks
 end
 
 function createConnection(listeners, listener)
@@ -59,17 +64,33 @@ function signal:Connect(listener)
 	return createConnection(self.Listeners, listener)
 end
 
+function signal:Wait()
+	table.insert(self.Threads, coroutine.running())
+	local output repeat
+		output = {coroutine.yield()}
+		local success = table.remove(output, 1)
+	until success == true
+	coroutine.yield()
+	return unpack(output)
+end
+
 function signal:Fire(...)
-	local threads = createThreads(self.Listeners)
+	for i = #self.Threads, 1, -1 do
+		coroutine.resume(self.Threads[i], true, ...)
+		table.remove(self.Threads, i)
+	end
+	local threads = createCallbacks(self.Listeners)
 	for i = 1, #threads do
-		coroutine.resume(threads[i], ...)
+		threads[i](...)
 	end
 end
 
 signal.connect = signal.Connect
+signal.wait = signal.Wait
 
 function createSignal()
 	return setmetatable({
+		Threads = {},
 		Listeners = {}
 	}, signal)
 end
@@ -89,7 +110,10 @@ end
 
 local socket = {}
 socket.__index = socket
-socket.__newindex = error
+socket.__newindex = function (_, index)
+	error(index .. " is not a valid member of Socket", 0)
+end
+
 
 function socket:Listen(name, listener)
 	if not self.Callbacks[name] then
@@ -107,9 +131,9 @@ end
 function socket:RunListeners(name, ...)
 	local listeners = self.Listeners[name]
 	if #listeners > 0 then
-		local threads = createThreads(listeners)
+		local threads = createCallbacks(listeners)
 		for i = 1, #threads do
-			coroutine.resume(threads[i], ...)
+			threads[i](...)
 		end
 	else
 		local queue = self.Queue.Events[name]
@@ -169,8 +193,8 @@ function socket:ExecuteRequestQueue(name)
 	while #queue > 0 do
 		local args = queue[1]
 		local requestId = table.remove(args, 1)
-		local thread = coroutine.create(socket.RunCallback)
-		coroutine.resume(thread, self, name, requestId, unpack(args))
+		local thread = coroutine.wrap(socket.RunCallback)
+		thread(self, name, requestId, unpack(args))
 		table.remove(queue, 1)
 	end
 end
@@ -188,10 +212,6 @@ socket.Connect = socket.Listen
 socket.connect = socket.Listen
 socket.Invoke = socket.Request
 socket.Fire = socket.Emit
-
-local notNil = {__index = function (s, i)
-	local t={} rawset(s, i, t) return t
-end}
 
 function createSocket(player)
 	return setmetatable({
