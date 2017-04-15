@@ -21,17 +21,6 @@ function generateId()
 	return httpService:GenerateGUID(false)
 end
 
---local fastSpawn do
---	local event = Instance.new("BindableEvent")
---	event.Event:connect(function ()
---		
---	end)
---	function fastSpawn(fn, ...)
---		event:Fire()
---	end
---end
-
-
 local notNil = {__index = function (s, i)
 	local t={} rawset(s, i, t) return t
 end}
