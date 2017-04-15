@@ -106,6 +106,11 @@ Makes a request to all clients in the given room, passing ... through to the cli
 
 ### Socket
 A socket is used to communicate between the server and the client and it exposes many powerful methods to do so. It is created when the client first communicates with the server and returned by the connected event or by requiring the client module.
+#### Properties
+##### Player
+The player this socket belongs to. Only available on the server.
+##### Alive
+A boolean representing if the connection is alive or not. Only available on the server.
 #### Events
 ##### Disconnected
 The disconnected event fires when the player disconnects from the server for whatever reason. Once this event has been fired the socket is dead and can not be used anymore.
