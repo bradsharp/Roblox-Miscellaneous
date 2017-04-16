@@ -349,7 +349,7 @@ function module:Request(name, ...)
 	local id = generateId()
 	local args = {...}
 	module.Callbacks[id] = table.remove(args)
-	request:FireAllClients(name, id, unpack(args))
+	request:FireAllClients(id, name, unpack(args))
 end
 
 function module:EmitRoom(room, name, ...)
@@ -366,7 +366,7 @@ function module:RequestRoom(room, name, ...)
 	module.Callbacks[id] = table.remove(args)
 	for i = 1, #room do
 		if room[i].Alive then
-			request:FireClient(room[i].Player, name, unpack(args))
+			request:FireClient(room[i].Player, id, name, unpack(args))
 		end
 	end
 end
@@ -382,7 +382,7 @@ function module:RequestClients(players, name, ...)
 	local args = {...}
 	module.Callbacks[id] = table.remove(args)
 	for i = 1, #players do
-		request:FireClient(players[i], name, unpack(args))
+		request:FireClient(players[i], id, name, unpack(args))
 	end
 end
 
