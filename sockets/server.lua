@@ -7,7 +7,6 @@ local replicatedStorage = game:GetService'ReplicatedStorage'
 local players = game:GetService'Players'
 
 local folder = Instance.new("Folder")
---local join = Instance.new("RemoteEvent")
 local event = Instance.new("RemoteEvent")
 local request = Instance.new("RemoteEvent")
 local response = Instance.new("RemoteEvent")
@@ -355,7 +354,9 @@ end
 
 function module:EmitRoom(room, name, ...)
 	for i = 1, #room do
-		event:FireClient(room[i].Player, name, ...)
+		if room[i].Alive then
+			event:FireClient(room[i].Player, name, ...)
+		end
 	end
 end
 
@@ -364,7 +365,9 @@ function module:RequestRoom(room, name, ...)
 	local args = {...}
 	module.Callbacks[id] = table.remove(args)
 	for i = 1, #room do
-		request:FireClient(room[i].Player, name, unpack(args))
+		if room[i].Alive then
+			request:FireClient(room[i].Player, name, unpack(args))
+		end
 	end
 end
 
@@ -435,13 +438,11 @@ end)
 
 -------------------------------------------------
 
---join.Name = "Join"
 event.Name = "Event"
 request.Name = "Request"
 response.Name = "Response"
 folder.Name = "Sockets"
 
---join.Parent = folder
 event.Parent = folder
 request.Parent = folder
 response.Parent = folder
