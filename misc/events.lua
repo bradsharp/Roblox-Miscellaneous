@@ -1,61 +1,32 @@
-function generateId()
-	return httpService:GenerateGUID(false)
+local event = {}
+event.__index = event
+
+function event:Connect(f)
+	return self.Bindable.Event:connect(function (key)
+		local t = self.Cache[key]
+		f(unpack(t))
+	end)
 end
 
--- CONNECTION -----------------------------------
-
-local connection = {}
-connection.__index = connection
-
-function connection:Disconnect()
-	for i = 1, #self.Listeners do
-		if self.Listeners[i][1] == self.Id then
-			table.remove(self.Listeners, i)
-			break
-		end
-	end
-	self.Listeners = nil
+function event:Wait()
+	local key = self.Bindable.Event:wait()
+	local t = self.Cache[key]
+	return unpack(t)
 end
 
-connection.disconnect = connection.Disconnect
-
-function createThreads(listeners)
-	local threads = {}
-	for i = 1, #listeners do
-		table.insert(threads, coroutine.create(listeners[i][2]))
-	end
-	return threads
+function event:Fire(...)
+	local key = tick()
+	self.Cache[key] = {...}
+	self.Bindable:Fire(key)
+	self.Cache[key] = nil
 end
 
-function createConnection(listeners, listener)
-	local id = generateId()
-	table.insert(listeners, 1, {id, listener})
+event.connect = event.Connect
+event.wait = event.Wait
+
+function createEvent()
 	return setmetatable({
-		Id = id,
-		Listeners = listeners,
-	}, connection)
-end
-
--- SIGNAL ---------------------------------------
-
-local signal = {}
-signal.__index = signal
-
-function signal:Connect(listener)
-	return createConnection(self.Listeners, listener)
-end
-
-function signal:Run(...)
-	local threads = createThreads(self.Listeners)
-	for i = 1, #threads do
-		coroutine.resume(threads[i], ...)
-	end
-end
-
-signal.connect = signal.Connect
-
-function createSignal()
-	return setmetatable({
-		Listeners = {}
-	}, signal)
+		Bindable = Instance.new("BindableEvent"),
+		Cache = {}
+	}, event)
 end
