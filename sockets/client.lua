@@ -177,7 +177,7 @@ end
 function socket:RunCallback(name, requestId, ...)
 	local callback = self.Callbacks[name]
 	if callback then
-		response:FireServer(requestId, name, callback(...))
+		response:FireServer(requestId, callback(...))
 	else
 		local queue = self.Queue.Requests[name]
 		if #queue < requestQueueSize then
