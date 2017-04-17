@@ -3,19 +3,9 @@ local AUTOSAVE_INTERVAL = 60
 
 local MAX_ATTEMPTS = 3
 
-local VERSION = "0.0.0.0"
+local VERSION = "0.0.0"
 
-local SCHEMA = {
-	NewPlayer = true,
-	Spells = {},
-	Inventory = {},
-	Equipped = {
-		Body = "",
-		Hat = "",
-		Face = "",
-		Gear = ""
-	}
-}
+local SCHEMA = {}
 
 -------------------------------------------------
 
