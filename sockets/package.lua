@@ -9,7 +9,7 @@ return {
 	License = "MIT",
 	Main = "server",
 	Ignore = {
-		"Client"
+		"client"
 	}
 	Platform = {
 		Server = true
