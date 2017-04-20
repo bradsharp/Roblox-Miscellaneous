@@ -8,6 +8,9 @@ return {
 	},
 	License = "MIT",
 	Main = "server",
+	Ignore = {
+		"Client"
+	}
 	Platform = {
 		Server = true
 	}
