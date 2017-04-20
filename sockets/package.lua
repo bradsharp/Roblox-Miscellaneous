@@ -8,4 +8,7 @@ return {
 	},
 	License = "MIT",
 	Main = "server",
+	Platform = {
+		Server = true
+	}
 }
