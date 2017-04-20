@@ -10,7 +10,7 @@ return {
 	Main = "server",
 	Ignore = {
 		"client"
-	}
+	},
 	Platform = {
 		Server = true
 	}
