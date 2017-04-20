@@ -7,7 +7,7 @@ return {
 		UserId = 1451803
 	},
 	License = "MIT",
-	Main = "client",
+	Main = "socket",
 	Platform = {
     Client = true,
 		Server = false
