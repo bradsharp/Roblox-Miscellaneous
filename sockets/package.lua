@@ -13,5 +13,8 @@ return {
 	},
 	Platform = {
 		Server = true
+	},
+	Dependencies = {
+		["Socket"] = "https://github.com/BradSharp/roblox/tree/master/sockets/client"	
 	}
 }
