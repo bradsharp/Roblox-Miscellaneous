@@ -1,32 +1,37 @@
 local event = {}
 event.__index = event
 
-function event:Connect(f)
-	return self.Bindable.Event:connect(function (key)
-		local t = self.Cache[key]
-		f(unpack(t))
+function event:Connect(listener)
+	return self.Bind.Event:connect(function (key)
+		listener(unpack(self.Cache[key]))
 	end)
 end
 
 function event:Wait()
-	local key = self.Bindable.Event:wait()
-	local t = self.Cache[key]
-	return unpack(t)
+	return unpack(self.Cache[self.Bind.Event:wait()])
 end
 
 function event:Fire(...)
 	local key = tick()
 	self.Cache[key] = {...}
-	self.Bindable:Fire(key)
+	self.Bind:Fire(key)
 	self.Cache[key] = nil
 end
 
 event.connect = event.Connect
 event.wait = event.Wait
 
-function createEvent()
+function event:Destroy()
+	self.Bind:Destroy()
+	self.Bind = nil
+	self.Cache = nil
+end
+
+function event.new()
 	return setmetatable({
-		Bindable = Instance.new("BindableEvent"),
-		Cache = {}
+		Bind = Instance.new("BindableEvent"),
+		Cache = {},
 	}, event)
 end
+
+return event
