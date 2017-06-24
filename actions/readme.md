@@ -32,6 +32,15 @@ reset:Bind(userInputService.InputBegan, function (input)
 		and input.KeyCode == Enum.KeyCode.R
 end)
 ```
+#### void BindToInput(table inputMap)
+Binds the action to input from UserInputService by mapping properties from a table onto the object and checking if they match.
+```lua
+reset:BindToInput({
+	UserInputState = Enum.UserInputState.Begin,
+	UserInputType = Enum.UserInputType.Keyboard,
+	KeyCode = Enum.KeyCode.R
+})
+```
 #### void Unbind(RBXScriptSignal signal)
 If the action is connected to the given signal, it will unbind it meaning that it will no longer fire the action.
 #### void SetActive(bool active)
