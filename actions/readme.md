@@ -6,6 +6,8 @@ There are two main objects, the module itself and an action.
 ### Module
 #### action CreateAction(string name, function action)
 Creates a new action which can be bound to events, accepts a string name to identify it and a callback function that will run everytime one of the bound events is fired.
+
+The first parameter passed to the callback is the name of the event that called it.
 ```lua
 local reset = actions:CreateAction("Reset", function ()
 	local player = game:GetService'Players'.LocalPlayer
