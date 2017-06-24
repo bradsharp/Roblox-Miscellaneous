@@ -43,7 +43,5 @@ reset:BindToInput({
 	KeyCode = Enum.KeyCode.R
 })
 ```
-#### void Unbind(RBXScriptSignal signal)
-If the action is connected to the given signal, it will unbind it meaning that it will no longer fire the action.
 #### void SetActive(bool active)
 Sets whether the action is enabled or disabled.
