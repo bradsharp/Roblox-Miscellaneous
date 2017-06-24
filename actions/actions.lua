@@ -1,8 +1,54 @@
+local userInputServce = game:GetService'UserInputService'
+
 local module = {}
 local actions = {}
 
 local Action = {}
 Action.__index = Action
+
+local function compare(prop, val, obj)
+	return obj[prop] == val
+end
+
+local function isMapValid(inputObject, map)
+	for property, value in pairs(map) do
+		local success, result = pcall(compare, property, value, inputObject)
+		if success then
+			if not result then
+				return false
+			end
+		else
+			warn(result)
+		end
+	end
+	return true
+end
+
+local function areMapsValid(inputObject, maps)
+	for i = 1, #maps do
+		if isMapValid(inputObject, maps[i]) then
+			return true
+		end
+	end
+	return false
+end
+
+function Action:_ConnectInputListeners()
+	if #self.InputListeners > 0 then return end
+	local function callback(inputObject, ...)
+		if areMapsValid(inputObject, self.InputMaps) then
+			self.Callback(inputObject, ...)
+		end
+	end
+	table.insert(self.InputListeners, userInputServce.InputBegan:Connect(callback))
+	table.insert(self.InputListeners, userInputServce.InputChanged:Connect(callback))
+	table.insert(self.InputListeners, userInputServce.InputEnded:Connect(callback))
+end
+
+function Action:BindToInput(inputMap)
+	table.insert(self.InputMaps, inputMap)
+	self:_ConnectInputListeners()
+end
 
 function Action:Bind(signal, check)
 	local t = typeof(check)
@@ -37,10 +83,14 @@ function Action:SetActive(active)
 		for listener, data in pairs(self.Listeners) do
 			data[2] = listener:Connect(data[1])
 		end
+		self:_ConnectInputListeners()
 	else
 		for listener, data in pairs(self.Listeners) do
 			data[2]:Disconnect()
 			data[2] = nil
+		end
+		for i = 1, #self.InputListeners do
+			table.remove(self.InputListeners, 1):Disconnect()
 		end
 	end
 end
@@ -49,6 +99,8 @@ function Action.new(callback)
 	return setmetatable({
 		Callback = callback,
 		Listeners = {},
+		InputListeners = {},
+		InputMaps = {},
 		Active = true
 	}, Action)
 end
