@@ -1,8 +1,8 @@
-#Shift
+# Shift
 Calculates the time shift between the client and the server allowing you to keep an accurate record of the users ping for use with projectiles or other network sensitive tasks
 
 ## Documentation
-The responder file should be placed in a local script called 'Responder' within the shift module.
+The responder file should be placed in a local script called 'Responder' within the shift module. The shift module is based entirely on the server.
 ### Module
 #### number GetShift(Instance player)
 Returns the offset between the servers tick and the clients tick.
