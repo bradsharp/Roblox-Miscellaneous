@@ -46,7 +46,7 @@ end)
 
 playerGui.ChildRemoved:Connect(function (child)
 	for i = 1, #guis do
-		if guis[i].Gui == child then
+		if guis[i] == child then
 			table.remove(guis, i)
 			break
 		end
@@ -66,8 +66,8 @@ return function (depth)
 	gui.Adornee = part
 	gui.LightInfluence = 0
 	gui.Size = UDim2.new(0, size.X, 0, size.Y)
-	gui.StudsOffset = Vector3.new(0, 0, -depth)
 	gui.Parent = playerGui
+	gui.StudsOffset = Vector3.new(0, 0, -depth)
 	table.insert(guis, gui)
 	return gui
 end
