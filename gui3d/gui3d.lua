@@ -65,9 +65,9 @@ return function (depth)
 	local gui = Instance.new("BillboardGui")
 	gui.Adornee = part
 	gui.LightInfluence = 0
-	gui.Size = UDim2.new(0, size.X, 0, size.Y)
-	gui.Parent = playerGui
+	gui.Size = UDim2.new(0, size.X, 0, size.Y)	
 	gui.StudsOffset = Vector3.new(0, 0, -depth)
+	gui.Parent = playerGui
 	table.insert(guis, gui)
 	return gui
 end
