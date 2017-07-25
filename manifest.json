@@ -1,5 +1,5 @@
 {
   "Dependencies": {
-    "Luna": {"Type": "Git", "Repository": "bradsharp/luna", "Version": "master"}
+    "Luna": {"Type": "Git", "Repository": "bradsharp/luna"}
   }
 }
