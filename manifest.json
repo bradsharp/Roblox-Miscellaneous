@@ -1,0 +1,5 @@
+{
+  "Dependencies": {
+    {"Type": "Git", "Repository": "bradsharp/luna", "Version": "master"}
+  }
+}
