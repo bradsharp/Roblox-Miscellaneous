@@ -1,39 +1,31 @@
-local typeError = "bad argument to 'bind' (function expected, got %s)"
-
 local bind = {}
-local toIndex, fromIndex = {}, {}
+local lookup = {}
 
 function bind:__index(index)
-	local indexType = type(index)
-	if indexType ~= "number" then error("Index must be numeric", 2) end
-	local binding = fromIndex[index]
-	if not binding then
-		binding = {}
-		toIndex[binding] = index
-		fromIndex[index] = binding
-	end
-	return binding
+	if type(index) ~= "number" then error("Index must be numeric") end
+	local value = {}
+	rawset(self, index, value)
+	lookup[value] = index
+	return value
 end
 
 function bind:__call(...)
-	local boundArgs = {...}
+	local args = {...}
+	local method = table.remove(args)
+	if type(method) ~= "function" then error("bad argument to 'bind' (function expected") end
 	local binding = {}
-	for i = 1, #boundArgs do
-		local arg = boundArgs[i]
-		local index = toIndex[arg]
+	for i = 1, #args do
+		local value = args[i]
+		local index = lookup[value]
 		if index then binding[i] = index end
 	end
-	local callback = table.remove(boundArgs)
-	local callbackType = type(callback)
-	if callbackType ~= "function" then error(typeError:format(callbackType), 2) end
 	return function (...)
-		local args = {...}
+		local unbound = {...}
 		for i, j in pairs(binding) do
-			print(i, j, args[j], boundArgs[i])
-			boundArgs[i] = args[j]
+			args[i] = unbound[j]
 		end
-		callback(unpack(boundArgs))
+		return method(unpack(args))
 	end
 end
 
-return setmetatable(bind, bind)
+return setmetatable({}, bind)
