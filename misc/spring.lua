@@ -21,7 +21,7 @@ function Spring:AdjustFrequency(frequency)
 end
 
 function Spring:Impulse(velocity)
-	self.Velocity += velocity
+	self.Velocity = self.Velocity + velocity
 end
 
 function Spring:Update(step)
