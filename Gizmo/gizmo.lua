@@ -120,7 +120,7 @@ function gizmo.drawBox(orientation, size)
 	local adornment = get("BoxHandleAdornment")
 	style(adornment)
 	adornment.Size = size
-	adornment.CFrame = orientation
+	adornment.CFrame *= orientation
 	table.insert(queue, adornment)
 end
 
@@ -149,37 +149,37 @@ function gizmo.drawWireBox(orientation, size)
 	style(adornmentX3)
 	style(adornmentX4)
 	adornmentX1.Size = sizeX
-	adornmentX1.CFrame = orientation * CFrame.new(0, y, z)
+	adornmentX1.CFrame *= orientation * CFrame.new(0, y, z)
 	adornmentX2.Size = sizeX
-	adornmentX2.CFrame = orientation * CFrame.new(0, -y, z)
+	adornmentX2.CFrame *= orientation * CFrame.new(0, -y, z)
 	adornmentX3.Size = sizeX
-	adornmentX3.CFrame = orientation * CFrame.new(0, y, -z)
+	adornmentX3.CFrame *= orientation * CFrame.new(0, y, -z)
 	adornmentX4.Size = sizeX
-	adornmentX4.CFrame = orientation * CFrame.new(0, -y, -z)
+	adornmentX4.CFrame *= orientation * CFrame.new(0, -y, -z)
 	style(adornmentY1)
 	style(adornmentY2)
 	style(adornmentY3)
 	style(adornmentY4)
 	adornmentY1.Size = sizeY
-	adornmentY1.CFrame = orientation * CFrame.new(x, 0, z)
+	adornmentY1.CFrame *= orientation * CFrame.new(x, 0, z)
 	adornmentY2.Size = sizeY
-	adornmentY2.CFrame = orientation * CFrame.new(-x, 0, z)
+	adornmentY2.CFrame *= orientation * CFrame.new(-x, 0, z)
 	adornmentY3.Size = sizeY
-	adornmentY3.CFrame = orientation * CFrame.new(x, 0, -z)
+	adornmentY3.CFrame *= orientation * CFrame.new(x, 0, -z)
 	adornmentY4.Size = sizeY
-	adornmentY4.CFrame = orientation * CFrame.new(-x, 0, -z)
+	adornmentY4.CFrame *= orientation * CFrame.new(-x, 0, -z)
 	style(adornmentZ1)
 	style(adornmentZ2)
 	style(adornmentZ3)
 	style(adornmentZ4)
 	adornmentZ1.Size = sizeZ
-	adornmentZ1.CFrame = orientation * CFrame.new(x, y, 0)
+	adornmentZ1.CFrame *= orientation * CFrame.new(x, y, 0)
 	adornmentZ2.Size = sizeZ
-	adornmentZ2.CFrame = orientation * CFrame.new(-x, y, 0)
+	adornmentZ2.CFrame *= orientation * CFrame.new(-x, y, 0)
 	adornmentZ3.Size = sizeZ
-	adornmentZ3.CFrame = orientation * CFrame.new(x, -y, 0)
+	adornmentZ3.CFrame *= orientation * CFrame.new(x, -y, 0)
 	adornmentZ4.Size = sizeZ
-	adornmentZ4.CFrame = orientation * CFrame.new(-x, -y, 0)
+	adornmentZ4.CFrame *= orientation * CFrame.new(-x, -y, 0)
 	table.insert(queue, adornmentX1)
 	table.insert(queue, adornmentX2)
 	table.insert(queue, adornmentX3)
@@ -199,7 +199,7 @@ function gizmo.drawSphere(orientation, radius)
 	local adornment = get("SphereHandleAdornment")
 	style(adornment)
 	adornment.Radius = radius
-	adornment.CFrame = orientation
+	adornment.CFrame *= orientation
 	table.insert(queue, adornment)
 end
 
@@ -214,17 +214,17 @@ function gizmo.drawWireSphere(orientation, radius)
 	adornmentX.Radius = outerRadius
 	adornmentX.InnerRadius = innerRadius
 	adornmentX.Height = thickness
-	adornmentX.CFrame = orientation
+	adornmentX.CFrame *= orientation
 	style(adornmentY)
 	adornmentY.Radius = outerRadius
 	adornmentY.InnerRadius = innerRadius
 	adornmentY.Height = thickness
-	adornmentY.CFrame = orientation * CFrame.Angles(math.pi * 0.5, 0, 0)
+	adornmentY.CFrame *= orientation * CFrame.Angles(math.pi * 0.5, 0, 0)
 	style(adornmentZ)
 	adornmentZ.Radius = outerRadius
 	adornmentZ.InnerRadius = innerRadius
 	adornmentZ.Height = thickness
-	adornmentZ.CFrame = orientation * CFrame.Angles(0, math.pi * 0.5, 0)
+	adornmentZ.CFrame *= orientation * CFrame.Angles(0, math.pi * 0.5, 0)
 	table.insert(queue, adornmentX)
 	table.insert(queue, adornmentY)
 	table.insert(queue, adornmentZ)
@@ -235,7 +235,7 @@ function gizmo.drawPoint(position)
 	local adornment = get("SphereHandleAdornment")
 	style(adornment)
 	adornment.Radius = globalScale * thickness * POINT_SCALE * 0.5
-	adornment.CFrame = CFrame.new(position)
+	adornment.CFrame *= CFrame.new(position)
 	table.insert(queue, adornment)
 end
 
@@ -247,7 +247,7 @@ function gizmo.drawLine(from, to)
 	adornment.Radius = globalScale * thickness * 0.5
 	adornment.InnerRadius = 0
 	adornment.Height = distance
-	adornment.CFrame = CFrame.lookAt(from, to) * CFrame.new(0, 0, -distance * 0.5)
+	adornment.CFrame *= CFrame.lookAt(from, to) * CFrame.new(0, 0, -distance * 0.5)
 	table.insert(queue, adornment)
 end
 
@@ -262,11 +262,11 @@ function gizmo.drawArrow(from, to)
 	adornmentLine.Radius = globalScale * thickness * 0.5
 	adornmentLine.InnerRadius = 0
 	adornmentLine.Height = distance
-	adornmentLine.CFrame = orientation * CFrame.new(0, 0, -distance * 0.5)
+	adornmentLine.CFrame *= orientation * CFrame.new(0, 0, -distance * 0.5)
 	style(adornmentCone)
 	adornmentCone.Height = coneHeight
 	adornmentCone.Radius = coneHeight * 0.5
-	adornmentCone.CFrame = orientation * CFrame.new(0, 0, -distance)
+	adornmentCone.CFrame *= orientation * CFrame.new(0, 0, -distance)
 	table.insert(queue, adornmentLine)
 	table.insert(queue, adornmentCone)
 end
