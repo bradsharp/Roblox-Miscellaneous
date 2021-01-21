@@ -10,7 +10,13 @@ RunService:BindToRenderStep("DrawGizmos", 200, function ()
 end)
 ```
 
-### Draw Methods
+By default, gizmos are not shown to the user. You must enable them. This can be done through the [studio plugin](https://www.roblox.com/library/6277906195/gizmo) or the following line of code:
+
+```lua
+workspace:SetAttribute("GizmosEnabled", true)
+```
+
+## Draw Methods
 ##### drawBox(CFrame orientation, Vector3 size)
 Draws a box at a coordinate frame with a given size
 
@@ -40,7 +46,7 @@ _Note: The length of the ray is determined by the magnitude of direction_
 ##### clear()
 Clears all gizmos that are due to be rendered
 
-### Style Methods
+## Style Methods
 gizmos can be styled by calling any of the following style methods before your draw method
 
 ##### setColor(string brickColorName)
