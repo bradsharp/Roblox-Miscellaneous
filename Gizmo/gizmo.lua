@@ -116,7 +116,7 @@ function gizmo.reset()
 end
 
 -- Draws a box at a coordine frame with a given size
-function gizmo.drawBox(size, orientation)
+function gizmo.drawBox(orientation, size)
 	local adornment = get("BoxHandleAdornment")
 	style(adornment)
 	adornment.Size = size
@@ -125,7 +125,7 @@ function gizmo.drawBox(size, orientation)
 end
 
 -- Draws a wire-box at a coordine frame with a given size
-function gizmo.drawWireBox(size, orientation)
+function gizmo.drawWireBox(orientation, size)
 	-- If anyone has a better way to do this which is just as performant please let me know
 	local x, y, z = size.X / 2, size.Y / 2, size.Z / 2
 	local lineWidth = thickness * globalScale
@@ -195,19 +195,18 @@ function gizmo.drawWireBox(size, orientation)
 end
 
 -- Draws a sphere at a position with a given radius
-function gizmo.drawSphere(position, radius)
+function gizmo.drawSphere(orientation, radius)
 	local adornment = get("SphereHandleAdornment")
 	style(adornment)
 	adornment.Radius = radius
-	adornment.CFrame = CFrame.new(position)
+	adornment.CFrame = orientation
 	table.insert(queue, adornment)
 end
 
 -- Draws a wire-sphere at a position with a given radius
-function gizmo.drawWireSphere(position, radius)
+function gizmo.drawWireSphere(orientation, radius)
 	local offset = globalScale * thickness * 0.5
 	local outerRadius, innerRadius = radius + offset, radius - offset
-	local orientation = CFrame.new(position)
 	local adornmentX = get("CylinderHandleAdornment")
 	local adornmentY = get("CylinderHandleAdornment")
 	local adornmentZ = get("CylinderHandleAdornment")
