@@ -1,6 +1,6 @@
 ------------------------------------------------------------------------------------------------------------------------
 -- Name:		gizmo.lua
--- Version:		0.9 (1/21/2021)
+-- Version:		1.0 (1/21/2021)
 -- Author:		Brad Sharp
 --
 -- Repository:	https://github.com/BradSharp/Roblox-Miscellaneous/tree/master/Gizmo
@@ -15,10 +15,12 @@ local gizmo = {}
 -- Variables
 ------------------------------------------------------------------------------------------------------------------------
 
-local POINT_SCALE	= 5
+local ENABLED_ATTRIBUTE = "GizmosEnabled"
+local POINT_SCALE = 5
 
 local RunService = game:GetService("RunService")
 local Event = RunService:IsServer() and RunService.Heartbeat or RunService.RenderStepped
+local Service = RunService:IsStudio() and game:GetService("StudioService") or workspace
 local Gizmos = Instance.new("Folder", workspace)
 
 local thickness = script:GetAttribute("DefaultThickness")
@@ -124,7 +126,72 @@ end
 
 -- Draws a wire-box at a coordine frame with a given size
 function gizmo.drawWireBox(size, orientation)
-	
+	-- If anyone has a better way to do this which is just as performant please let me know
+	local x, y, z = size.X, size.Y, size.Z
+	local lineWidth = thickness * globalScale
+	local sizeX = Vector3.new(x + lineWidth * 2, lineWidth, lineWidth)
+	local sizeY = Vector3.new(lineWidth, y + lineWidth * 2, lineWidth)
+	local sizeZ = Vector3.new(lineWidth, lineWidth, z + lineWidth * 2)
+	local adornmentX1 = get("BoxHandleAdornment")
+	local adornmentX2 = get("BoxHandleAdornment")
+	local adornmentX3 = get("BoxHandleAdornment")
+	local adornmentX4 = get("BoxHandleAdornment")
+	local adornmentY1 = get("BoxHandleAdornment")
+	local adornmentY2 = get("BoxHandleAdornment")
+	local adornmentY3 = get("BoxHandleAdornment")
+	local adornmentY4 = get("BoxHandleAdornment")
+	local adornmentZ1 = get("BoxHandleAdornment")
+	local adornmentZ2 = get("BoxHandleAdornment")
+	local adornmentZ3 = get("BoxHandleAdornment")
+	local adornmentZ4 = get("BoxHandleAdornment")
+	style(adornmentX1)
+	style(adornmentX2)
+	style(adornmentX3)
+	style(adornmentX4)
+	adornmentX1.Size = sizeX
+	adornmentX1.CFrame = orientation * CFrame.new(0, y, z)
+	adornmentX2.Size = sizeX
+	adornmentX2.CFrame = orientation * CFrame.new(0, -y, z)
+	adornmentX3.Size = sizeX
+	adornmentX3.CFrame = orientation * CFrame.new(0, y, -z)
+	adornmentX4.Size = sizeX
+	adornmentX4.CFrame = orientation * CFrame.new(0, -y, -z)
+	style(adornmentY1)
+	style(adornmentY2)
+	style(adornmentY3)
+	style(adornmentY4)
+	adornmentY1.Size = sizeY
+	adornmentY1.CFrame = orientation * CFrame.new(x, 0, z)
+	adornmentY2.Size = sizeY
+	adornmentY2.CFrame = orientation * CFrame.new(-x, 0, z)
+	adornmentY3.Size = sizeY
+	adornmentY3.CFrame = orientation * CFrame.new(x, 0, -z)
+	adornmentY4.Size = sizeY
+	adornmentY4.CFrame = orientation * CFrame.new(-x, 0, -z)
+	style(adornmentZ1)
+	style(adornmentZ2)
+	style(adornmentZ3)
+	style(adornmentZ4)
+	adornmentZ1.Size = sizeZ
+	adornmentZ1.CFrame = orientation * CFrame.new(x, y, 0)
+	adornmentZ2.Size = sizeZ
+	adornmentZ2.CFrame = orientation * CFrame.new(-x, y, 0)
+	adornmentZ3.Size = sizeZ
+	adornmentZ3.CFrame = orientation * CFrame.new(x, -y, 0)
+	adornmentZ4.Size = sizeZ
+	adornmentZ4.CFrame = orientation * CFrame.new(-x, -y, 0)
+	table.insert(queue, adornmentX1)
+	table.insert(queue, adornmentX2)
+	table.insert(queue, adornmentX3)
+	table.insert(queue, adornmentX4)
+	table.insert(queue, adornmentY1)
+	table.insert(queue, adornmentY2)
+	table.insert(queue, adornmentY3)
+	table.insert(queue, adornmentY4)
+	table.insert(queue, adornmentZ1)
+	table.insert(queue, adornmentZ2)
+	table.insert(queue, adornmentZ3)
+	table.insert(queue, adornmentZ4)
 end
 
 -- Draws a sphere at a position with a given radius
@@ -212,7 +279,7 @@ end
 
 -- Draws text on the screen at the given location
 function gizmo.drawText()
-	
+	warn("drawText has not been implemented")
 end
 
 -- Clears all gizmos that are currently being rendered
@@ -250,15 +317,15 @@ local function disableGizmos()
 	end
 end
 
-workspace:GetAttributeChangedSignal("GizmosEnabled"):Connect(function ()
-	if workspace:GetAttribute("GizmosEnabled") then
+Service:GetAttributeChangedSignal("GizmosEnabled"):Connect(function ()
+	if Service:GetAttribute("GizmosEnabled") then
 		enableGizmos()
 	else
 		disableGizmos()
 	end
 end)
 
-if workspace:GetAttribute("GizmosEnabled") then
+if Service:GetAttribute("GizmosEnabled") then
 	enableGizmos()
 end
 
