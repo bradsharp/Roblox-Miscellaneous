@@ -9,20 +9,44 @@
 -- Copyright (c) 2021 Brad Sharp
 ------------------------------------------------------------------------------------------------------------------------
 
-local DEFAULT_THICKNESS		= 0.025
-local DEFAULT_COLOR			= Color3.fromRGB(255, 255, 255)
-local DEFAULT_SCALE			= 1
-local DEFAULT_POINT_SCALE	= 5
+local gizmo = {}
 
 ------------------------------------------------------------------------------------------------------------------------
+-- Variables
+------------------------------------------------------------------------------------------------------------------------
+
+local POINT_SCALE	= 5
 
 local RunService = game:GetService("RunService")
-local Gizmos = Instance.new("Folder")
+local Event = RunService:IsServer() and RunService.Heartbeat or RunService.RenderStepped
+local Gizmos = Instance.new("Folder", workspace)
+
+local thickness = script:GetAttribute("DefaultThickness")
+local globalScale = script:GetAttribute("DefaultScale")
+local onRender = nil
+local cache = {}
+local queue = {}
+
+local properties = {
+	Adornee = workspace,
+	AlwaysOnTop = true,
+	Color3 = script:GetAttribute("DefaultColor"),
+	Visible = false,
+	ZIndex = 1,
+}
+
+Gizmos.Name = "Gizmos"
+Gizmos.Archivable = false
 
 ------------------------------------------------------------------------------------------------------------------------
--- Gizmo Caching (improves performance, but uses more memory)
+-- Utility
+------------------------------------------------------------------------------------------------------------------------
 
-local cache = {}
+local function style(adornment)
+	for property, value in pairs(properties) do
+		adornment[property] = value
+	end
+end
 
 local function get(class)
 	local classCache = cache[class]
@@ -43,32 +67,13 @@ local function release(instance)
 	table.insert(classCache, instance)
 end
 
-------------------------------------------------------------------------------------------------------------------------
--- Gizmo Property Assignment
-
-local SCALE = DEFAULT_SCALE
-	
-local properties = {
-	Adornee = workspace,
-	AlwaysOnTop = true,
-	Color3 = DEFAULT_COLOR,
-	Visible = false,
-	ZIndex = 1,
-}
-
-local function style(adornment)
-	for property, value in pairs(properties) do
-		adornment[property] = value
-	end
+local function empty()
+	-- do nothing
 end
 
 ------------------------------------------------------------------------------------------------------------------------
-
-local gizmo = {}
-local queue = {}
-
+-- Exports
 ------------------------------------------------------------------------------------------------------------------------
--- Library methods
 
 -- Sets the color of drawn gizmos
 function gizmo.setColor(color)
@@ -95,16 +100,17 @@ function gizmo.setLayer(index)
 end
 
 function gizmo.setScale(scale)
-	SCALE = scale
+	globalScale = scale
 end
 
 -- Resets all custom styling to default values
 function gizmo.reset()
-	properties.Color3 = DEFAULT_COLOR
 	properties.Transparency = 0
 	properties.ZIndex = 1
 	properties.CFrame = CFrame.new(0, 0, 0)
-	SCALE = DEFAULT_SCALE
+	properties.Color3 = script:GetAttribute("DefaultColor")
+	globalScale = script:GetAttribute("DefaultScale")
+	thickness = script:GetAttribute("DefaultThickness")
 end
 
 -- Draws a box at a coordine frame with a given size
@@ -114,6 +120,11 @@ function gizmo.drawBox(size, orientation)
 	adornment.Size = size
 	adornment.CFrame = orientation
 	table.insert(queue, adornment)
+end
+
+-- Draws a wire-box at a coordine frame with a given size
+function gizmo.drawWireBox(size, orientation)
+	
 end
 
 -- Draws a sphere at a position with a given radius
@@ -127,7 +138,7 @@ end
 
 -- Draws a wire-sphere at a position with a given radius
 function gizmo.drawWireSphere(position, radius)
-	local offset = SCALE * DEFAULT_THICKNESS * 0.5
+	local offset = globalScale * thickness * 0.5
 	local outerRadius, innerRadius = radius + offset, radius - offset
 	local orientation = CFrame.new(position)
 	local adornmentX = get("CylinderHandleAdornment")
@@ -136,17 +147,17 @@ function gizmo.drawWireSphere(position, radius)
 	style(adornmentX)
 	adornmentX.Radius = outerRadius
 	adornmentX.InnerRadius = innerRadius
-	adornmentX.Height = DEFAULT_THICKNESS
+	adornmentX.Height = thickness
 	adornmentX.CFrame = orientation
 	style(adornmentY)
 	adornmentY.Radius = outerRadius
 	adornmentY.InnerRadius = innerRadius
-	adornmentY.Height = DEFAULT_THICKNESS
+	adornmentY.Height = thickness
 	adornmentY.CFrame = orientation * CFrame.Angles(math.pi * 0.5, 0, 0)
 	style(adornmentZ)
 	adornmentZ.Radius = outerRadius
 	adornmentZ.InnerRadius = innerRadius
-	adornmentZ.Height = DEFAULT_THICKNESS
+	adornmentZ.Height = thickness
 	adornmentZ.CFrame = orientation * CFrame.Angles(0, math.pi * 0.5, 0)
 	table.insert(queue, adornmentX)
 	table.insert(queue, adornmentY)
@@ -157,7 +168,7 @@ end
 function gizmo.drawPoint(position)
 	local adornment = get("SphereHandleAdornment")
 	style(adornment)
-	adornment.Radius = SCALE * DEFAULT_THICKNESS * DEFAULT_POINT_SCALE * 0.5
+	adornment.Radius = globalScale * thickness * POINT_SCALE * 0.5
 	adornment.CFrame = CFrame.new(position)
 	table.insert(queue, adornment)
 end
@@ -167,7 +178,7 @@ function gizmo.drawLine(from, to)
 	local distance = (to - from).magnitude
 	local adornment = get("CylinderHandleAdornment")
 	style(adornment)
-	adornment.Radius = SCALE * DEFAULT_THICKNESS * 0.5
+	adornment.Radius = globalScale * thickness * 0.5
 	adornment.InnerRadius = 0
 	adornment.Height = distance
 	adornment.CFrame = CFrame.lookAt(from, to) * CFrame.new(0, 0, -distance * 0.5)
@@ -176,20 +187,20 @@ end
 
 -- Draws an arrow between two positions
 function gizmo.drawArrow(from, to)
-	local coneHeight = DEFAULT_THICKNESS * DEFAULT_POINT_SCALE * SCALE
+	local coneHeight = thickness * POINT_SCALE * globalScale
 	local distance = math.abs((to - from).magnitude - coneHeight)
 	local orientation = CFrame.lookAt(from, to)
 	local adornmentLine = get("CylinderHandleAdornment")
 	local adornmentCone = get("ConeHandleAdornment")
 	style(adornmentLine)
-	adornmentLine.Radius = SCALE * DEFAULT_THICKNESS * 0.5
+	adornmentLine.Radius = globalScale * thickness * 0.5
 	adornmentLine.InnerRadius = 0
 	adornmentLine.Height = distance
-	adornmentLine.CFrame *= orientation * CFrame.new(0, 0, -distance * 0.5)
+	adornmentLine.CFrame = orientation * CFrame.new(0, 0, -distance * 0.5)
 	style(adornmentCone)
 	adornmentCone.Height = coneHeight
 	adornmentCone.Radius = coneHeight * 0.5
-	adornmentCone.CFrame *= orientation * CFrame.new(0, 0, -distance)
+	adornmentCone.CFrame = orientation * CFrame.new(0, 0, -distance)
 	table.insert(queue, adornmentLine)
 	table.insert(queue, adornmentCone)
 end
@@ -199,6 +210,12 @@ function gizmo.drawRay(from, direction)
 	gizmo.drawArrow(from, from + direction)
 end
 
+-- Draws text on the screen at the given location
+function gizmo.drawText()
+	
+end
+
+-- Clears all gizmos that are currently being rendered
 function gizmo.clear()
 	for _, adornment in ipairs(queue) do
 		adornment.Visible = false
@@ -208,31 +225,42 @@ function gizmo.clear()
 end
 
 ------------------------------------------------------------------------------------------------------------------------
--- Main render loop
+-- Render
+------------------------------------------------------------------------------------------------------------------------
 
-RunService.RenderStepped:Connect(function ()
-	local frame = queue
-	queue = {}
-	for _, adornment in ipairs(frame) do
-		adornment.Visible = true
+local function enableGizmos()
+	onRender = Event:Connect(function ()
+		local frame = queue
+		queue = {}
+		for _, adornment in ipairs(frame) do
+			adornment.Visible = true
+		end
+		Event:Wait()
+		for _, adornment in ipairs(frame) do
+			adornment.Visible = false
+			release(adornment)
+		end
+	end)
+end
+
+local function disableGizmos()
+	if onRender then
+		onRender:Disconnect()
+		onRender = nil
 	end
-	RunService.RenderStepped:Wait()
-	for _, adornment in ipairs(frame) do
-		adornment.Visible = false
-		release(adornment)
+end
+
+workspace:GetAttributeChangedSignal("GizmosEnabled"):Connect(function ()
+	if workspace:GetAttribute("GizmosEnabled") then
+		enableGizmos()
+	else
+		disableGizmos()
 	end
 end)
 
-------------------------------------------------------------------------------------------------------------------------
-
-local function doNothing()
-	-- does nothing	
+if workspace:GetAttribute("GizmosEnabled") then
+	enableGizmos()
 end
-
-------------------------------------------------------------------------------------------------------------------------
-
-Gizmos.Name = "Gizmos"
-Gizmos.Archivable = false
 
 ------------------------------------------------------------------------------------------------------------------------
 
