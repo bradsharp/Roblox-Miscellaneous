@@ -20,7 +20,6 @@ local POINT_SCALE = 5
 
 local RunService = game:GetService("RunService")
 local Event = RunService:IsServer() and RunService.Heartbeat or RunService.RenderStepped
-local Service = RunService:IsStudio() and game:GetService("StudioService") or workspace
 local Gizmos = Instance.new("Folder", workspace)
 
 local thickness = script:GetAttribute("DefaultThickness")
@@ -32,6 +31,7 @@ local queue = {}
 local properties = {
 	Adornee = workspace,
 	AlwaysOnTop = true,
+	AdornCullingMode = Enum.AdornCullingMode.Automatic,
 	Color3 = script:GetAttribute("DefaultColor"),
 	Visible = false,
 	ZIndex = 1,
@@ -70,7 +70,7 @@ local function release(instance)
 end
 
 local function empty()
-	-- do nothing
+	-- at some point I'll switch each method out with empty so there's no overhead when gizmos are disabled
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -127,11 +127,11 @@ end
 -- Draws a wire-box at a coordine frame with a given size
 function gizmo.drawWireBox(size, orientation)
 	-- If anyone has a better way to do this which is just as performant please let me know
-	local x, y, z = size.X, size.Y, size.Z
+	local x, y, z = size.X / 2, size.Y / 2, size.Z / 2
 	local lineWidth = thickness * globalScale
-	local sizeX = Vector3.new(x + lineWidth * 2, lineWidth, lineWidth)
-	local sizeY = Vector3.new(lineWidth, y + lineWidth * 2, lineWidth)
-	local sizeZ = Vector3.new(lineWidth, lineWidth, z + lineWidth * 2)
+	local sizeX = Vector3.new(size.X + lineWidth, lineWidth, lineWidth)
+	local sizeY = Vector3.new(lineWidth, size.Y + lineWidth, lineWidth)
+	local sizeZ = Vector3.new(lineWidth, lineWidth, size.Z + lineWidth)
 	local adornmentX1 = get("BoxHandleAdornment")
 	local adornmentX2 = get("BoxHandleAdornment")
 	local adornmentX3 = get("BoxHandleAdornment")
@@ -317,15 +317,15 @@ local function disableGizmos()
 	end
 end
 
-Service:GetAttributeChangedSignal("GizmosEnabled"):Connect(function ()
-	if Service:GetAttribute("GizmosEnabled") then
+workspace:GetAttributeChangedSignal("GizmosEnabled"):Connect(function ()
+	if workspace:GetAttribute("GizmosEnabled") then
 		enableGizmos()
 	else
 		disableGizmos()
 	end
 end)
 
-if Service:GetAttribute("GizmosEnabled") then
+if workspace:GetAttribute("GizmosEnabled") then
 	enableGizmos()
 end
 
