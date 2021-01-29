@@ -1,5 +1,5 @@
 ## Gizmo
-Gizmo allows you to render 3D debug information on the screen known as gizmos.
+gizmo allows you to render 3D debug information on the screen known as gizmos.
 
 ## Usage
 gizmos are only rendered for a single frame, this makes them easy to manage as they'll be cleaned up for you automatically. On the flip-side this means you need to call your draw method at least once per frame to make sure the gizmo is rendered continuously.
