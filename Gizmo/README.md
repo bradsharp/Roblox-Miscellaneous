@@ -46,6 +46,14 @@ _Note: The length of the ray is determined by the magnitude of direction_
 #### drawText(Vector3 position, string formatText, ...formatParams)
 Draws some text at the position, formatted with the specified parameters.
 
+```lua
+gizmo.drawText(myAttachment.WorldPosition, "MyAttachment")
+```
+
+```lua
+gizmo.drawText(myAttachment.WorldPosition, "Altitude: %.4f", myAttachment.WorldPosition.Y)
+```
+
 #### clear()
 Clears all gizmos that are due to be rendered
 
