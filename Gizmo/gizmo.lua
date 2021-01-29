@@ -28,6 +28,7 @@ local globalOrigin = CFrame.new(0, 0, 0)
 local onRender = nil
 local cache = {}
 local queue = {}
+local textQueue = {}
 
 local properties = {
 	Adornee = workspace,
@@ -280,8 +281,25 @@ function gizmo.drawRay(from, direction)
 end
 
 -- Draws text on the screen at the given location
-function gizmo.drawText()
-	warn("drawText has not been implemented")
+function gizmo.drawText(position, text, ...)
+	local safeText = tostring(text):format(...)
+	local billboard = get("BillboardGui")
+	local label = get("TextLabel")
+	local textScale = globalScale * 0.25
+	billboard.AlwaysOnTop = true
+	billboard.StudsOffsetWorldSpace = position
+	billboard.Size = UDim2.fromScale(safeText:len() * 0.5 * textScale, textScale)
+	billboard.LightInfluence = 0
+	label.Size = UDim2.fromScale(1, 1)
+	label.BackgroundTransparency = 1
+	label.Font = Enum.Font.RobotoMono
+	label.TextColor3 = properties.Color3
+	label.TextTransparency = properties.Transparency
+	label.TextScaled = true
+	label.Text = safeText
+	label.Parent = billboard
+	table.insert(queue, label)
+	table.insert(textQueue, billboard)
 end
 
 -- Clears all gizmos that are currently being rendered
@@ -299,14 +317,21 @@ end
 
 local function enableGizmos()
 	onRender = Event:Connect(function ()
-		local frame = queue
-		queue = {}
+		local frame, textFrame = queue, textQueue
+		queue, textQueue = {}, {}
 		for _, adornment in ipairs(frame) do
 			adornment.Visible = true
+		end
+		for _, adornment in ipairs(textFrame) do
+			adornment.Enabled = true
 		end
 		Event:Wait()
 		for _, adornment in ipairs(frame) do
 			adornment.Visible = false
+			release(adornment)
+		end
+		for _, adornment in ipairs(textFrame) do
+			adornment.Enabled = false
 			release(adornment)
 		end
 	end)
