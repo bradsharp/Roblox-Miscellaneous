@@ -1,5 +1,5 @@
 local Components	= script:FindFirstAncestor("Components")
-local Roact			= require(Components.Roact)
+local Roact		= require(Components.Roact)
 local Wormhole		= Roact.PureComponent:extend("Wormhole")
 local MountEvent	= Roact.Event.Mounted
 local UpdateEvent	= Roact.Event.Updated
