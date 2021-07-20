@@ -45,7 +45,7 @@ Connection.__index = {}
 
 function Connection.new(signal, callback)
 	return setmetatable({
-		Connected = false,
+		Connected = true,
 		__callback = callback,
 		__signal = signal
 	}, Connection)
